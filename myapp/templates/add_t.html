@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <style>
+        body{
+            background-color: #C9C9C9;
+        }
+        main{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 98vh;
+            
+
+        }
+
+        .main{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            height: 75vh;
+            width: 76vw;
+        }
+
+        #title{
+            display: flex;
+            justify-content: center;
+            
+            height: 75vh;
+            width: 67vh;
+            background-color: #FF8686;
+
+            font-size: 2.5em;
+            color: white;
+            border-radius: 10px 0 0 10px;
+            text-align: center;
+            
+        }
+
+        #opcoes > button{
+            width: 8vw;
+            height: 5vh;
+            margin-bottom: 2vh;
+
+
+            background-color: #D9D9D9;
+            border-radius: 10px;
+            color: #000;
+        }
+
+
+
+
+        #item{
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 75vh;
+            width: 97vh;
+            background-color: #F0F0F0;
+            border-radius: 0 10px 10px 0;
+            text-align: center;
+        }
+        .lacuna1{
+            width: 30vw;
+            height: 15vh;
+            background-color: #FFA1A1;
+            margin: 30px 0 30px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            
+        }
+
+        .lacuna2{
+            width: 30vw;
+            height: 10vh;
+            background-color: transparent;
+            margin: 30px 0 30px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+
+        .lacuna2 > button{
+            width: 15vw;
+            height: 5vh;
+            background-color: #FFA1A1;
+            border-radius: 10px;
+        }
+
+
+        input{
+            position: relative;
+            top: 40%;
+        }
+
+
+        
+
+
+        
+
+
+
+
+    </style>
+</head>
+
+<body>
+
+    <main>
+        <div class="main">
+            <div id="title">
+                <div>
+                    <p style="margin-top: 15vh;">Menu</p>
+                    <div id="opcoes">
+                        <button style="display: block;">Add Pratico</button>
+                        <button style="display: block;">Remove Pratico</button>
+
+                        <button style="display: block;">Add Teoria</button>
+                        <button style="display: block;">Remove Teoria</button>
+                    </div>
+                </div>
+                
+                
+            </div>
+            <div id="item">
+                <div>   
+                    <div class="lacuna1">
+                        <form method="POST">
+                            {% csrf_token %}
+                            {{form}}
+                        </form>
+                    </div>
+                    <div class="lacuna2">
+                        <button type="submit" style="display: block;">Salvar</button>
+                        <button type="submit" style="display: block;">Cancelar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+
+
+
+</body>
+</html>
