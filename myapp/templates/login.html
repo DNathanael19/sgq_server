@@ -28,6 +28,7 @@
         }
 
         #title{
+            font-family: 'Open Sans', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
@@ -77,6 +78,7 @@
         }
 
         input{
+            cursor: pointer;
             padding: 8px;
             font-size: 16px;
             border: 1px solid #ccc;
@@ -94,7 +96,7 @@
     <main>
         <div class="main">
             <div id="title">
-                <p>Login</p>
+                <p style="font-family: 'Open Sans', sans-serif;">Login</p>
             </div>
             <div id="login">
                 <div>
@@ -111,7 +113,7 @@
                     
 
                     <div id="link">
-                        <a href="{% url 'cadastro'%}">Cadastro</a>
+                        <a href="{% url 'cadastro'%}" style="font-family: 'Open Sans', sans-serif;">Cadastro</a>
                     </div>
                 </div>
             </div>

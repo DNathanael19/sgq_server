@@ -1,26 +1,13 @@
 from django.shortcuts import render, redirect
 from django.http import HttpResponse, HttpResponseRedirect
-from .models import Aluno, Experimento_Pratico
+from .models import Aluno, Experimento_Pratico, CriacaoAluno, CriacaoExperimento
 import json
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate 
 from django.contrib.auth import login as lg
-
-
-from sklearn.linear_model import LinearRegression
-from sklearn.metrics import mean_squared_error
+import matplotlib as plt
 import numpy as np
-
-#auth
-def regressao(dados):
-    # x_valores = np.array([dado['x'] for dado in dados]).reshape(-1, 1)
-    # y_valores = np.array([dado['y'] for dado in dados])
-
-    # regressao = LinearRegression()
-    # regressao.fit(x_valores, y_valores)
-    # y_previsto = regressao.predict(x_valores)
-    pass #em construção
-
+#from sklearn.linear_model import LinearRegression 
 
 
 
@@ -37,8 +24,7 @@ def cadastro(request):
         
         user = User.objects.create_user(username=username, password=senha)
         user.save()
-        return HttpResponse('Show!!')
-
+        return redirect('login')
 
 
 def login(request):
@@ -53,10 +39,30 @@ def login(request):
             lg(request, user)
             return redirect('dash')
         else: 
-            return HttpResponse('erro')
+            return HttpResponse('Erro, tente novamente')
+
 
 
 #plataform
+
+
+def coef(x, y): # Vai receber a concentração e a variação de temperatura 
+	# número de observações/pontos
+	n = np.size(x)
+
+	# média dos vetores x e y
+	m_x = np.mean(x)
+	m_y = np.mean(y)
+
+	# calculando desvio cruzado e desvio sobre x
+	SS_xy = np.sum(y*x) - n*m_y*m_x
+	SS_xx = np.sum(x*x) - n*m_x*m_x
+
+	# cálculo de coeficientes de regressão
+	b_1 = SS_xy / SS_xx
+	b_0 = m_y - b_1*m_x
+
+	return (b_0, b_1)
 
 def k_raul():
     value = Experimento_Pratico.objects.all()
@@ -81,19 +87,17 @@ def k_otimo():
 
     for c in value:
         concentracao.append([c.concentracao_p])
-        temp.append(c.temp_ebulicao_p)
+        temp.append([c.temp_ebulicao_p])
 
     concentracao = np.array(concentracao)
     temp = np.array(temp)
-    regressao = LinearRegression().fit(concentracao, 100-temp)
-    reg = regressao.coef_
-    reg = reg.tolist()
+    reg1, reg2 = coef(concentracao, 100-temp) # só esse
 
     lista_dados = []
     for i in value:
-        lista_dados.append({"x": i.concentracao_p, "y": (reg[0] * i.concentracao_p) + regressao.intercept_})
+        lista_dados.append({"x": i.concentracao_p, "y": (reg2 * i.concentracao_p) + reg1}) # reg1 - intercept_ // reg2 - coef_
     
-    aux = (reg[0] * i.concentracao_p) + regressao.intercept_
+    aux = (reg2 * i.concentracao_p) + reg1
     return lista_dados, aux
     
 
@@ -109,50 +113,70 @@ def teorico():  #CERTOOO
 
 
 
-def dash(request): 
+def mean_squared_error(y_true, y_pred):
+    e = 0
+    for yi, yj in zip(y_true, y_pred):
+        e += (yi - yj)**2
+    return e
+
+
+
+def dash(request):
     if request.user.is_authenticated:
+        # Verificar se existem experimentos no banco de dados
+        if Experimento_Pratico.objects.exists():
+            k_Raul, aux = k_raul()
+            k_Otimo, aux2 = k_otimo()
+            dados = teorico()
+            
+            value = Experimento_Pratico.objects.all()
+            concentracao = []
+            temp = []
 
-        k_Raul, aux = k_raul()     #y - array
-        k_Otimo, aux2 = k_otimo()   #y - array
-        dados = teorico()     #x, y
+            for c in value:
+                concentracao.append(c.concentracao_p)
+                temp.append(c.temp_ebulicao_p)
+            
+            k_Raul_json = json.dumps(k_Raul) 
+            k_Otimo_json = json.dumps(k_Otimo)
+            Dados_json = json.dumps(dados)
 
-        value = Experimento_Pratico.objects.all()
-        concentracao = []
-        temp = []
-
-        for c in value:
-            concentracao.append(c.concentracao_p)
-            temp.append(c.temp_ebulicao_p)
-
-        erro_raul = mean_squared_error(100-np.array(temp), 0.52 * np.array(concentracao))
-        erro_otimo = mean_squared_error(100-np.array(temp), k_Otimo * np.array(concentracao))
+            return render(request, 'dash.html', {"dados_json": Dados_json, "k_otimo": k_Otimo_json, "k_raul": k_Raul_json, "listas": Experimento_Pratico.objects.all()})
         
-        k_Raul_json = json.dumps(k_Raul) 
-        k_Otimo_json = json.dumps(k_Otimo)
-        Dados_json = json.dumps(dados)
-
-        return render(request, 'dash.html', {"dados_json":Dados_json, "k_otimo": k_Otimo_json, "k_raul" : k_Raul_json, "erro1":erro_otimo, "erro2":erro_raul})
+        # Caso não existam experimentos, retornar uma mensagem de erro ou renderizar uma página vazia
+        return render(request, 'dash.html', {"dados_json": "[]", "k_otimo": "[]", "k_raul": "[]", "listas": []})
     
-    return HttpResponse('Vc precisa estar logado')
+    return HttpResponse('Você precisa estar logado')
 
 
 
-def addteorico():
-    pass
-def delteorico():
-    pass
-
-def addpratico():
-    pass
-def delpratico():
-    pass
 
 
-# lista_teorico = []
 
-#     value = Experimento_Pratico.objects.all()
-#     for c in value:
-#         tempo_2 = c.concentracao_p * 0.52
-#         lista_teorico.append({"x": c.concentracao_p, "y":tempo_2})
 
-#     teorico = json.dumps(lista_teorico)
+
+
+
+def naologado():
+    return HttpResponse('Você nao esta logado')
+
+
+def newTeorico(request):
+    if request.user.is_authenticated:
+        formExp = CriacaoExperimento(request.POST or None)
+        
+        if formExp.is_valid():
+            formExp.save()
+
+        return render(request, 'add.html', {'formExp' : formExp})
+    
+    naologado()
+
+
+
+def delTeorico(request, id):
+    lista = Experimento_Pratico.objects.get(experimento_p=id)
+    lista.delete()
+    return HttpResponseRedirect("../../dash")
+
+
